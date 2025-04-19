@@ -53,7 +53,7 @@ pip install ttkbootstrap requests tldextract joblib pyopengltk PyOpenGL scikit-l
 
 1. **Run the Application:**
 ```
-python phishing_scanner.py
+python Phishing_Scanner.py
 ```
 
 2. **Single URL Scan:**
@@ -129,7 +129,7 @@ python phishing_scanner.py
 ## File Structure
 
 ```
-phishing_scanner.py
+Phishing_Scanner.py
 phishing_model.pkl # (Optional) Pre-trained ML model
 scan_history.json # (Auto-generated) Scan history log
 requirements.txt # (Recommended) List of dependencies
