@@ -1,0 +1,7 @@
+tk
+ttkbootstrap
+requests
+joblib
+tldextract
+pyopengltk
+PyOpenGL
