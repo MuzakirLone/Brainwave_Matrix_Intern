@@ -1,4 +1,4 @@
-# ⚡️ Phishing Scanner - Cybersecurity Edition
+# ⚡️ Phishing Scanner
 
 A modern, cyberpunk-themed desktop application for detecting phishing URLs using heuristic analysis, machine learning, and real-time SSL checks. Features a 3D animated scanning meter and a user-friendly interface for both single and batch URL scanning.
 
