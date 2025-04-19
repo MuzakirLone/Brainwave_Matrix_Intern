@@ -16,6 +16,18 @@ A modern, cyberpunk-themed desktop application for detecting phishing URLs using
 - **Modern UI:** Built with Tkinter and ttkbootstrap for a dark, cyberpunk look.
 
 ---
+## Installation
+1. **Clone the Repository:** 
+    ```sh
+    git clone https://github.com/MuzakirLone/Brainwave_Matrix_Intern.git
+    ```
+2. **Navigate to the Directory:**
+    ```sh
+    cd Brainwave_Matrix_Intern
+    ```
+3. **Run the Script:**
+    ```sh
+    Phishing_Scanner.py
 
 ## Screenshots
 ![Screenshot 2025-04-20 003508](https://github.com/user-attachments/assets/a234cbf3-a5a8-4953-8d19-44492972eb4a)
