@@ -18,8 +18,12 @@ A modern, cyberpunk-themed desktop application for detecting phishing URLs using
 ---
 
 ## Screenshots
-
-> _Add screenshots of the main window, scan progress, and history window here for best presentation._
+![Screenshot 2025-04-20 003508](https://github.com/user-attachments/assets/a234cbf3-a5a8-4953-8d19-44492972eb4a)
+![Screenshot 2025-04-20 003547](https://github.com/user-attachments/assets/4170e7a8-b956-439f-85d2-e146a3faa518)
+![Screenshot 2025-04-20 003607](https://github.com/user-attachments/assets/b0da66fd-097c-4221-bb8a-37a137744337)
+![Screenshot 2025-04-20 003618](https://github.com/user-attachments/assets/2990d16b-8665-433a-8e27-80b2c21d711e)
+![Screenshot 2025-04-20 003646](https://github.com/user-attachments/assets/2f1a2f19-e34b-4290-9b9d-73b4882df8d9)
+![Screenshot 2025-04-20 003659](https://github.com/user-attachments/assets/fbb4f436-fd87-4c89-95fd-a699343e89d1)
 
 ---
 
