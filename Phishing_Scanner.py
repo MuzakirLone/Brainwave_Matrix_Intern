@@ -20,6 +20,7 @@ from OpenGL.GLU import *
 import ttkbootstrap as tb
 from ttkbootstrap.widgets import Meter
 import math
+import time
 
 class GLScannerMeter(OpenGLFrame):
     """3D Scanning Progress Meter with Cyberpunk Style"""
@@ -249,6 +250,7 @@ class PhishingScanner:
         self.result_text.insert(tk.END, "🔍 Scanning URL...\n")
         self.result_text.insert(tk.END, "\n[SYSTEM] Initializing scan protocols...\n")
         self.result_text.config(state='disabled')
+        self.root.update()
 
         self.scan_button.config(state='disabled')
         self.meter.set_progress(0)
@@ -271,11 +273,12 @@ class PhishingScanner:
                     elif i == 75:
                         self.root.after(0, lambda: self.update_scan_status("[SYSTEM] Running heuristic analysis..."))
                     
-                    time.sleep(0.05)
+                    time.sleep(0.02)
                 
                 heuristic_result, details = self.is_suspicious(url)
-                self.root.after(0, lambda: self.update_results(url, heuristic_result, details))
-                self.root.after(0, lambda: self.meter.pack_forget())
+                # Ensure we're using a direct call for the final result update
+                self.root.after_idle(lambda: self.update_results(url, heuristic_result, details))
+                self.root.after(100, lambda: self.meter.pack_forget())
             except Exception as e:
                 # Handle any exceptions in the thread
                 self.root.after(0, lambda: self.handle_scan_error(str(e)))
@@ -298,6 +301,8 @@ class PhishingScanner:
         self.meter.pack_forget()
 
     def update_results(self, url, heuristic_result, details):
+        # Ensure text widget is in normal state for editing
+        self.result_text.config(state='normal')
         self.result_text.delete(1.0, tk.END)
         self.result_text.insert(tk.END, f"URL: {url}\n\n{heuristic_result}\n\n")
         
@@ -323,8 +328,12 @@ class PhishingScanner:
         self.history.append(scan_record)
         self.save_history()
 
+        # Make sure to update the UI before disabling the text widget
+        self.root.update()
         self.scan_button.config(state='normal')
         self.result_text.config(state='disabled')
+        # Force an additional update to ensure changes are visible
+        self.root.update()
 
     def setup_gui(self):
         self.root = tb.Window(themename="cyborg")
