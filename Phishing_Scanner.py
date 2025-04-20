@@ -271,7 +271,7 @@ class PhishingScanner:
                     elif i == 75:
                         self.root.after(0, lambda: self.update_scan_status("[SYSTEM] Running heuristic analysis..."))
                     
-                    time.sleep(0.02)
+                    time.sleep(0.05)
                 
                 heuristic_result, details = self.is_suspicious(url)
                 self.root.after(0, lambda: self.update_results(url, heuristic_result, details))
@@ -348,13 +348,13 @@ class PhishingScanner:
         progress_text.pack(pady=10)
         
         self.root.update()
-        time.sleep(0.3)
+        time.sleep(1.5)
         progress_text.config(text="Calibrating neural networks...")
         self.root.update()
-        time.sleep(0.3)
+        time.sleep(1.5)
         progress_text.config(text="Establishing secure connection...")
         self.root.update()
-        time.sleep(0.3)
+        time.sleep(1.5)
         splash_frame.destroy()
 
         title = tk.Label(self.root, text="\u26a1\ufe0f Phishing Scanner",
