@@ -25,6 +25,12 @@ import time
 class GLScannerMeter(OpenGLFrame):
     """3D Scanning Progress Meter with Cyberpunk Style"""
     def __init__(self, master, **kwargs):
+        # Ensure width and height are set
+        if 'width' not in kwargs:
+            kwargs['width'] = 200
+        if 'height' not in kwargs:
+            kwargs['height'] = 200
+            
         super().__init__(master, **kwargs)
         self.rotation = 0
         self.scan_progress = 0
@@ -34,101 +40,145 @@ class GLScannerMeter(OpenGLFrame):
         self.configure(bg="#181c26", highlightbackground="#39ff14", highlightthickness=2)
         # Make sure initgl is called after widget is created
         self.bind('<Map>', lambda _: self.after(100, self.initgl))
+        # Debug flag to track initialization
+        self.initialized = False
 
     def initgl(self):
         # Make sure the widget is visible before initializing OpenGL
         if not self.winfo_ismapped():
+            #print("Widget not mapped yet, delaying initialization")
+            self.after(100, self.initgl)
             return
             
-        glEnable(GL_DEPTH_TEST)
-        glEnable(GL_BLEND)  # Enable blending for transparency
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-        glEnable(GL_LIGHTING)
-        glEnable(GL_LIGHT0)
-        glLightfv(GL_LIGHT0, GL_POSITION, (0.0, 0.0, 1.0, 0.0))
-        glLightfv(GL_LIGHT0, GL_AMBIENT, (0.2, 0.2, 0.2, 1.0))
-        glLightfv(GL_LIGHT0, GL_DIFFUSE, (0.8, 0.8, 0.8, 1.0))
-        glEnable(GL_LIGHTING)
-        glEnable(GL_LIGHT0)
-        glLightfv(GL_LIGHT0, GL_POSITION, (0.0, 0.0, 1.0, 0.0))
-        glLightfv(GL_LIGHT0, GL_AMBIENT, (0.2, 0.2, 0.2, 1.0))
-        glLightfv(GL_LIGHT0, GL_DIFFUSE, (0.8, 0.8, 0.8, 1.0))
-        glMatrixMode(GL_PROJECTION)
-        glLoadIdentity()
-        gluPerspective(45, (self.width/self.height), 0.1, 50.0)
-        glMatrixMode(GL_MODELVIEW)
-        glLoadIdentity()
-        glTranslatef(0.0, 0.0, -5)
-        glClearColor(0.0, 0.0, 0.0, 1.0)
-        glClearColor(0.0, 0.0, 0.0, 1.0)
-        
-        # Start the redraw loop
-        self.after(20, self.redraw)
+        try:
+            # Get actual widget dimensions
+            self.width = self.winfo_width()
+            self.height = self.winfo_height()
+            
+            # Ensure we have valid dimensions
+            if self.width <= 1 or self.height <= 1:
+                self.width = 200
+                self.height = 200
+                
+            #print(f"Initializing OpenGL with dimensions: {self.width}x{self.height}")
+            
+            # Basic OpenGL setup
+            glEnable(GL_DEPTH_TEST)
+            glEnable(GL_BLEND)  # Enable blending for transparency
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+            
+            # Setup lighting - only once
+            glEnable(GL_LIGHTING)
+            glEnable(GL_LIGHT0)
+            glLightfv(GL_LIGHT0, GL_POSITION, (0.0, 0.0, 1.0, 0.0))
+            glLightfv(GL_LIGHT0, GL_AMBIENT, (1.0, 1.0, 1.0, 1.0))
+            glLightfv(GL_LIGHT0, GL_DIFFUSE, (0.8, 0.8, 0.8, 1.0))
+            
+            # Setup material properties for better rendering
+            glEnable(GL_COLOR_MATERIAL)
+            glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE)
+            
+            # Setup projection matrix
+            glMatrixMode(GL_PROJECTION)
+            glLoadIdentity()
+            gluPerspective(45, (self.width/self.height), 0.1, 50.0)
+            
+            # Setup modelview matrix
+            glMatrixMode(GL_MODELVIEW)
+            glLoadIdentity()
+            glTranslatef(0.0, 0.0, -5)
+            
+            # Set background color (only need to do this once)
+            glClearColor(0.0, 0.0, 0.0, 1.0)
+            
+            # Mark as initialized
+            self.initialized = True
+            print("OpenGL initialization complete")
+            
+            # Start the redraw loop
+            self.after(20, self.redraw)
+            
+        except Exception as e:
+            #print(f"Error initializing OpenGL: {e}")
+            # Try again after a delay
+            self.after(200, self.initgl)
 
     def redraw(self):
+        # Check if widget is visible and initialized
         if not self.winfo_ismapped():
             self.after(100, self.redraw)
             return
             
-        # Update pulse effect for cyberpunk glow
-        self.pulse_effect += 0.05 * self.pulse_direction
-        if self.pulse_effect > 1.0:
-            self.pulse_effect = 1.0
-            self.pulse_direction = -1
-        elif self.pulse_effect < 0.3:
-            self.pulse_effect = 0.3
-            self.pulse_direction = 1
+        if not self.initialized:
+            print("OpenGL not initialized yet, trying to initialize")
+            self.initgl()
+            self.after(100, self.redraw)
+            return
             
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        glLoadIdentity()
+        try:
+            # Update pulse effect for cyberpunk glow
+            self.pulse_effect += 0.05 * self.pulse_direction
+            if self.pulse_effect > 1.0:
+                self.pulse_effect = 1.0
+                self.pulse_direction = -1
+            elif self.pulse_effect < 0.3:
+                self.pulse_effect = 0.3
+                self.pulse_direction = 1
+                
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+            glLoadIdentity()
         
-        # Cyberpunk-style scanning ring
-        glTranslatef(0, 0, -5)
-        glRotatef(self.rotation, 0, 1, 0)
-        glRotatef(30, 1, 0, 0)  # Tilt for 3D effect
-        self.rotation = (self.rotation + 2) % 360
-        
-        # Background glow
-        glBegin(GL_TRIANGLE_FAN)
-        glColor4f(0.0, 0.2, 0.1, 0.2)  # Dark green glow
-        glVertex3f(0, 0, 0)
-        for i in range(0, 361, 10):
-            glVertex3f(1.8 * math.cos(math.radians(i)), 1.8 * math.sin(math.radians(i)), 0)
-        glEnd()
-        
-        # Outer ring with pulse effect
-        glBegin(GL_LINE_LOOP)
-        glColor3f(0.0, 1.0 * self.pulse_effect, 0.2)  # Pulsing neon green
-        for i in range(0, 360, 5):
-            glVertex3f(1.5 * math.cos(math.radians(i)), 1.5 * math.sin(math.radians(i)), 0)
-        glEnd()
-        
-        # Inner ring
-        glBegin(GL_LINE_LOOP)
-        glColor3f(0.0, 0.7, 0.9)  # Cyan
-        for i in range(0, 360, 10):
-            glVertex3f(1.2 * math.cos(math.radians(i)), 1.2 * math.sin(math.radians(i)), 0)
-        glEnd()
-        
-        # Progress fill
-        glBegin(GL_TRIANGLE_FAN)
-        glColor4f(0.2, 1.0, 0.3, 0.5)  # Semi-transparent fill
-        glVertex3f(0, 0, 0)
-        for i in range(0, int(3.6 * self.scan_progress) + 1):
-            angle = math.radians(i)
-            glVertex3f(math.cos(angle), math.sin(angle), 0)
-        glEnd()
-        
-        # Scanning line effect
-        if self.scan_progress > 0:
-            glBegin(GL_LINES)
-            glColor3f(1.0, 1.0, 0.3)  # Yellow scanning line
-            scan_angle = math.radians(3.6 * self.scan_progress)
+            # Cyberpunk-style scanning ring
+            glTranslatef(0, 0, -5)
+            glRotatef(self.rotation, 0, 1, 0)
+            glRotatef(30, 1, 0, 0)  # Tilt for 3D effect
+            self.rotation = (self.rotation + 2) % 360
+            
+            # Background glow
+            glBegin(GL_TRIANGLE_FAN)
+            glColor4f(0.0, 0.2, 0.1, 0.2)  # Dark green glow
             glVertex3f(0, 0, 0)
-            glVertex3f(1.5 * math.cos(scan_angle), 1.5 * math.sin(scan_angle), 0)
+            for i in range(0, 361, 10):
+                glVertex3f(1.8 * math.cos(math.radians(i)), 1.8 * math.sin(math.radians(i)), 0)
             glEnd()
-        
-        self.tkSwapBuffers()
+            
+            # Outer ring with pulse effect
+            glBegin(GL_LINE_LOOP)
+            glColor3f(1.0 * self.pulse_effect, 0.5, 0.0)  # Adjusted to orange
+            for i in range(0, 360, 5):
+                glVertex3f(1.5 * math.cos(math.radians(i)), 1.5 * math.sin(math.radians(i)), 0)
+            glEnd()
+
+            # Inner ring
+            glBegin(GL_LINE_LOOP)
+            glColor3f(0.5, 0.0, 0.9)  # Adjusted to purple
+            for i in range(0, 360, 10):
+                glVertex3f(1.2 * math.cos(math.radians(i)), 1.2 * math.sin(math.radians(i)), 0)
+            glEnd()
+
+            
+            # Progress fill
+            glBegin(GL_TRIANGLE_FAN)
+            glColor4f(0.2, 1.0, 0.3, 0.5)  # Semi-transparent fill
+            glVertex3f(0, 0, 0)
+            for i in range(0, int(3.6 * self.scan_progress) + 1):
+                angle = math.radians(i)
+                glVertex3f(math.cos(angle), math.sin(angle), 0)
+            glEnd()
+            
+            # Scanning line effect
+            if self.scan_progress > 0:
+                glBegin(GL_LINES)
+                glColor3f(1.0, 1.0, 0.3)  # Yellow scanning line
+                scan_angle = math.radians(3.6 * self.scan_progress)
+                glVertex3f(0, 0, 0)
+                glVertex3f(1.5 * math.cos(scan_angle), 1.5 * math.sin(scan_angle), 0)
+                glEnd()
+            
+            self.tkSwapBuffers()
+        except Exception as e:
+            print(f"Error in redraw: {e}")
+            
         self.after(20, self.redraw)
 
     def set_progress(self, value):
@@ -206,37 +256,53 @@ class PhishingScanner:
         hostname = parsed.hostname or ""
         warnings = []
         checks = []
-
+        
+        # Check for suspicious keywords
         suspicious_keywords = ["login", "verify", "secure", "account", "update", "bank", "free", "offer", "password", "confirm"]
         if any(keyword in url.lower() for keyword in suspicious_keywords):
             warnings.append("Contains suspicious keyword(s)")
 
+        # Check for IP address instead of domain name
         ip_address_pattern = r"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$"
         if re.match(ip_address_pattern, hostname):
             warnings.append("Uses IP address instead of domain")
 
+        # Check for excessive subdomain levels
         ext = tldextract.extract(url)
         if len(ext.subdomain.split('.')) > 2:
             warnings.append("Excessive subdomain levels")
 
+        # Check for hyphens in domain
         if '-' in hostname:
             warnings.append("Contains hyphens (often used in phishing)")
 
+        # HTTPS check
         if not url.startswith("https://"):
             warnings.append("Does not use HTTPS")
+            try:
+                response = requests.get(url, timeout=5, verify=False)
+                if response.status_code < 400:
+                    checks.append("✅ Website accessible")
+                else:
+                    warnings.append(f"Website error: {response.status_code}")
+            except Exception as e:
+                warnings.append(f"Website not reachable: {str(e)}")
         else:
+            # For HTTPS sites, check SSL certificate
             ssl_result, is_valid = self.check_ssl_cert(url)
             checks.append(ssl_result)
+            
+            # Try to access the site
+            try:
+                response = requests.get(url, timeout=5, verify=True)
+                if response.status_code >= 400:
+                    warnings.append(f"Website error: {response.status_code}")
+                else:
+                    checks.append("✅ Website accessible")
+            except Exception as e:
+                warnings.append(f"Website not reachable: {str(e)}")
 
-        try:
-            response = requests.get(url, timeout=5, verify=True)
-            if response.status_code >= 400:
-                warnings.append(f"Website error: {response.status_code}")
-            checks.append("✅ Website accessible")
-        except Exception as e:
-            warnings.append(f"Website not reachable: {str(e)}")
-
-        result = "✅ Heuristically looks safe." if not warnings else "⚠️ Potential phishing detected"
+        result = "✅ Heuristically looks safe" if not warnings else "⚠️ Potential phishing detected"
         return result, warnings + checks
 
     def scan_url(self):
@@ -254,7 +320,8 @@ class PhishingScanner:
 
         self.scan_button.config(state='disabled')
         self.meter.set_progress(0)
-        self.meter.pack(pady=10)
+        # Show the meter frame instead of just the meter
+        self.meter_frame.pack(pady=10)
         self.root.update()
 
         def scan_thread():
@@ -277,8 +344,8 @@ class PhishingScanner:
                 
                 heuristic_result, details = self.is_suspicious(url)
                 # Ensure we're using a direct call for the final result update
+                # Use after_idle to ensure UI updates properly
                 self.root.after_idle(lambda: self.update_results(url, heuristic_result, details))
-                self.root.after(100, lambda: self.meter.pack_forget())
             except Exception as e:
                 # Handle any exceptions in the thread
                 self.root.after(0, lambda: self.handle_scan_error(str(e)))
@@ -298,18 +365,27 @@ class PhishingScanner:
         self.result_text.insert(tk.END, f"\n⚠️ Error during scan: {error_message}\n")
         self.result_text.config(state='disabled')
         self.scan_button.config(state='normal')
-        self.meter.pack_forget()
+        self.meter_frame.pack_forget()
 
     def update_results(self, url, heuristic_result, details):
+        # Hide the meter frame when showing results
+        self.meter_frame.pack_forget()
+        
         # Ensure text widget is in normal state for editing
         self.result_text.config(state='normal')
         self.result_text.delete(1.0, tk.END)
-        self.result_text.insert(tk.END, f"URL: {url}\n\n{heuristic_result}\n\n")
+        
+        # Insert URL with electric blue color
+        self.result_text.insert(tk.END, "URL: ", ('heading', 'bold'))
+        self.result_text.insert(tk.END, f"{url}\n\n", ('url',))
+        
+        # Insert result with appropriate color
+        self.result_text.insert(tk.END, f"{heuristic_result}\n\n", ('result',))
         
         if details:
-            self.result_text.insert(tk.END, "Detailed Analysis:\n")
+            self.result_text.insert(tk.END, "Detailed Analysis:\n", ('heading', 'bold'))
             for detail in details:
-                self.result_text.insert(tk.END, f"• {detail}\n")
+                self.result_text.insert(tk.END, f"• {detail}\n", ('detail',))
 
         if self.model:
             try:
@@ -323,7 +399,8 @@ class PhishingScanner:
         scan_record = {
             "url": url,
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "result": heuristic_result
+            "result": heuristic_result,
+            "details": details
         }
         self.history.append(scan_record)
         self.save_history()
@@ -340,6 +417,17 @@ class PhishingScanner:
         self.root.title("\u26a1\ufe0f Phishing Scanner - Cybersecurity Edition")
         self.root.geometry("800x600")
         self.root.configure(bg="#10131a")
+        
+        # Configure text tags for colored output
+        self.result_text = scrolledtext.ScrolledText(self.root, height=15, width=70, wrap=tk.WORD,
+                                                bg="#181c26", fg="#39ff14", insertbackground="#39ff14",
+                                                font=("Fira Mono", 11, "bold"))
+        self.result_text.tag_configure('url', foreground='#00ffe7')  # Electric blue for URLs
+        self.result_text.tag_configure('timestamp', foreground='#b967ff')  # Neon purple for timestamps
+        self.result_text.tag_configure('result', foreground='#39ff14')  # Bright green for results
+        self.result_text.tag_configure('detail', foreground='#ff6b08')  # Orange for details
+        self.result_text.tag_configure('heading', foreground='#00ffff')  # Cyan for headings
+        self.result_text.tag_configure('bold', font=('Fira Mono', 11, 'bold'))
         
         # Import time module for animations
         import time
@@ -400,8 +488,12 @@ class PhishingScanner:
                                  bootstyle="danger-outline", width=18)
         export_button.pack(side=tk.LEFT, padx=6)
 
-        self.meter = GLScannerMeter(self.root, width=200, height=200)
-        self.meter.pack_forget()
+        # Create the OpenGL meter with explicit size and place it in a frame for better visibility
+        meter_frame = tk.Frame(self.root, bg="#10131a", highlightbackground="#39ff14", highlightthickness=1)
+        self.meter = GLScannerMeter(meter_frame, width=200, height=200)
+        self.meter.pack(padx=5, pady=5)
+        meter_frame.pack_forget()  # Initially hidden
+        self.meter_frame = meter_frame  # Store reference to the frame
 
         self.result_text = scrolledtext.ScrolledText(self.root, height=15, width=80, wrap=tk.WORD,
                                                     bg="#181c26", fg="#39ff14", insertbackground="#39ff14",
@@ -437,7 +529,8 @@ class PhishingScanner:
     def process_batch_urls(self, urls):
         # Reset progress meter for batch processing
         self.meter.set_progress(0)
-        self.meter.pack(pady=10)
+        # Show the meter frame instead of just the meter
+        self.meter_frame.pack(pady=10)
         self.root.update()
         
         # Update UI to show batch processing has started
@@ -477,7 +570,7 @@ class PhishingScanner:
                     
                     # Update results less frequently to avoid UI freezing
                     if processed % max(5, total_urls // 5) == 0 or processed == total_urls:
-                        self.root.after(0, self.update_batch_results)
+                        self.root.after(0, lambda: self.update_batch_results(show_all=True))
                         
                 except Exception as e:
                     scan_record = {
@@ -487,27 +580,66 @@ class PhishingScanner:
                         "details": []
                     }
                     self.batch_results.append(scan_record)
+                    self.history.append(scan_record)
 
         self.root.after(0, self.finalize_batch_scan)
         self.save_history()
 
-    def update_batch_results(self):
+    def update_batch_results(self, show_all=False):
         self.result_text.config(state='normal')
         self.result_text.delete(1.0, tk.END)
-        self.result_text.insert(tk.END, f"Processed {len(self.batch_results)} URLs\n\n")
+        self.result_text.insert(tk.END, f"🔍 Processed {len(self.batch_results)} URLs\n\n", ('heading', 'bold'))
         
-        for record in self.batch_results:
-            self.result_text.insert(tk.END, f"URL: {record['url']}\nResult: {record['result']}\n")
-            if record['details']:
-                self.result_text.insert(tk.END, "Details:\n")
-                for detail in record['details']:
-                    self.result_text.insert(tk.END, f"• {detail}\n")
-            self.result_text.insert(tk.END, "\n")
+        # Show either all results or just the latest one
+        records_to_show = self.batch_results if show_all else [self.batch_results[-1]]
+        
+        # Separate records into safe and suspicious
+        safe_records = []
+        suspicious_records = []
+        for record in records_to_show:
+            if "✅" in record['result']:
+                safe_records.append(record)
+            else:
+                suspicious_records.append(record)
+        
+        # Display suspicious URLs first with heading
+        if suspicious_records:
+            self.result_text.insert(tk.END, "⚠️ SUSPICIOUS URLs ⚠️\n", ('heading', 'bold'))
+            self.result_text.insert(tk.END, "="*50 + "\n\n")
+            for i, record in enumerate(suspicious_records, 1):
+                self.result_text.insert(tk.END, f"[{i}] URL: ", ('heading', 'bold'))
+                self.result_text.insert(tk.END, f"{record['url']}\n", ('url',))
+                self.result_text.insert(tk.END, "    Time: ", ('heading', 'bold'))
+                self.result_text.insert(tk.END, f"{record['timestamp']}\n", ('timestamp',))
+                self.result_text.insert(tk.END, "    Result: ", ('heading', 'bold'))
+                self.result_text.insert(tk.END, f"{record['result']}\n", ('result',))
+                if record['details']:
+                    self.result_text.insert(tk.END, "    Details:\n", ('heading', 'bold'))
+                    for detail in record['details']:
+                        self.result_text.insert(tk.END, f"    • {detail}\n", ('detail',))
+                self.result_text.insert(tk.END, "\n")
+        
+        # Display safe URLs with heading
+        if safe_records:
+            self.result_text.insert(tk.END, "✅ SAFE URLs ✅\n" + "="*50 + "\n\n")
+            for i, record in enumerate(safe_records, len(suspicious_records) + 1):
+                self.result_text.insert(tk.END, f"[{i}] URL: {record['url']}\n")
+                self.result_text.insert(tk.END, f"    Time: {record['timestamp']}\n")
+                self.result_text.insert(tk.END, f"    Result: {record['result']}\n")
+                if record['details']:
+                    self.result_text.insert(tk.END, "    Details:\n")
+                    for detail in record['details']:
+                        self.result_text.insert(tk.END, f"    • {detail}\n")
+                self.result_text.insert(tk.END, "\n")
 
+        self.result_text.see(tk.END)  # Auto-scroll to latest result
         self.result_text.config(state='disabled')
+        self.save_history()  # Save after each update
 
     def finalize_batch_scan(self):
         self.scan_button.config(state='normal')
+        # Hide the meter frame instead of just the meter
+        self.meter_frame.pack_forget()
         messagebox.showinfo("Complete", f"Finished scanning {len(self.batch_results)} URLs")
 
     def export_results(self):
@@ -523,12 +655,16 @@ class PhishingScanner:
         try:
             with open(file_path, 'w', newline='', encoding='utf-8') as file:
                 writer = csv.writer(file)
-                writer.writerow(["URL", "Timestamp", "Result", "Details"])
+                writer.writerow(["URL", "Timestamp", "Result", "Risk Score", "Grade", "Details"])
                 for record in self.batch_results:
+                    risk_score = record.get('risk_score', 'N/A')
+                    grade = record.get('grade', 'N/A')
                     writer.writerow([
                         record['url'],
                         record['timestamp'],
                         record['result'],
+                        risk_score,
+                        grade,
                         '; '.join(record.get('details', []))
                     ])
             messagebox.showinfo("Success", "Results exported successfully")
@@ -537,26 +673,72 @@ class PhishingScanner:
 
     def show_history(self):
         history_window = tk.Toplevel(self.root)
-        history_window.title("Scan History")
-        history_window.geometry("600x400")
-        history_window.configure(bg="#1e1e2f")
+        history_window.title("⚡ Scan History - Cybersecurity Archive")
+        history_window.geometry("800x600")
+        history_window.configure(bg="#10131a")
 
-        button_frame = tk.Frame(history_window, bg="#1e1e2f")
-        button_frame.pack(pady=5)
+        # Title frame with neon border
+        title_frame = tk.Frame(history_window, bg="#10131a", highlightbackground="#39ff14", highlightthickness=2)
+        title_frame.pack(fill=tk.X, padx=20, pady=10)
+        
+        title = tk.Label(title_frame, text="SECURITY SCAN ARCHIVE", font=("Orbitron", 20, "bold"),
+                         bg="#10131a", fg="#39ff14")
+        title.pack(pady=10)
 
-        clear_button = tb.Button(button_frame, text="Clear History", 
+        button_frame = tk.Frame(history_window, bg="#10131a")
+        button_frame.pack(pady=10)
+
+        clear_button = tb.Button(button_frame, text="🗑️ Clear History", 
                                 command=lambda: self.clear_and_update_history(history_window),
-                                bootstyle="danger-outline")
-        clear_button.pack()
+                                bootstyle="danger-outline", width=20)
+        clear_button.pack(side=tk.LEFT, padx=5)
 
-        history_text = scrolledtext.ScrolledText(history_window, wrap=tk.WORD, width=70, height=20,
-                                                bg="#2b2b3d", fg="#ffffff", font=("Fira Mono", 10))
-        history_text.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
+        export_history_button = tb.Button(button_frame, text="💾 Export History",
+                                         command=self.export_results,
+                                         bootstyle="info-outline", width=20)
+        export_history_button.pack(side=tk.LEFT, padx=5)
 
+        # Configure text widget with cyberpunk styling
+        history_text = scrolledtext.ScrolledText(history_window, wrap=tk.WORD,
+                                                bg="#181c26", fg="#39ff14",
+                                                font=("Fira Mono", 11),
+                                                insertbackground="#39ff14")
+        history_text.pack(padx=20, pady=10, fill=tk.BOTH, expand=True)
+
+        # Configure tags for colored text
+        history_text.tag_configure('url', foreground='#00ffe7')  # Electric blue
+        history_text.tag_configure('timestamp', foreground='#b967ff')  # Neon purple
+        history_text.tag_configure('result_safe', foreground='#39ff14')  # Bright green
+        history_text.tag_configure('result_warning', foreground='#ff6b08')  # Orange
+        history_text.tag_configure('header', foreground='#00ffff', font=("Fira Mono", 11, "bold"))  # Cyan
+
+        # Display scan history with cyberpunk formatting
         for scan in reversed(self.history):
-            history_text.insert(tk.END, f"URL: {scan['url']}\n")
-            history_text.insert(tk.END, f"Time: {scan['timestamp']}\n")
-            history_text.insert(tk.END, f"Result: {scan['result']}\n\n")
+            # URL with electric blue
+            history_text.insert(tk.END, "URL: ", 'header')
+            history_text.insert(tk.END, f"{scan['url']}\n", 'url')
+            
+            # Timestamp with neon purple
+            history_text.insert(tk.END, "Time: ", 'header')
+            history_text.insert(tk.END, f"{scan['timestamp']}\n", 'timestamp')
+            
+            # Result with conditional coloring
+            history_text.insert(tk.END, "Result: ", 'header')
+            if "✅" in scan['result']:
+                history_text.insert(tk.END, f"{scan['result']}\n", 'result_safe')
+            else:
+                history_text.insert(tk.END, f"{scan['result']}\n", 'result_warning')
+            
+            # Add details if present
+            if 'details' in scan and scan['details']:
+                history_text.insert(tk.END, "Details:\n", 'header')
+                for detail in scan['details']:
+                    if "✅" in detail:
+                        history_text.insert(tk.END, f"  • {detail}\n", 'result_safe')
+                    else:
+                        history_text.insert(tk.END, f"  • {detail}\n", 'result_warning')
+            
+            history_text.insert(tk.END, "\n" + "="*50 + "\n\n", 'header')
 
         history_text.config(state='disabled')
 
