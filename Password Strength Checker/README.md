@@ -72,8 +72,12 @@ pip install pyqt5 qdarkstyle
 
 **Clone the repository:**
 ```
-git clone https://github.com/yourusername/password-strength-checker.git
-cd password-strength-checker
+git clone --no-checkout https://github.com/MuzakirLone/Brainwave_Matrix_Intern.git
+cd Brainwave_Matrix_Intern
+git sparse-checkout init
+git sparse-checkout set "Password Strength Checker"
+git checkout
+cd Password Strength Checker
 ```
 
 **Run the application:**
