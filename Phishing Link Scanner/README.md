@@ -31,7 +31,7 @@ A modern, cyberpunk-themed desktop application for detecting phishing URLs using
     ```
 3. **Run the Script:**
     ```
-    python3 Phishing_Scanner.py
+    python3 phishing_link_scanner.py
     ```
 
 ## Screenshots
