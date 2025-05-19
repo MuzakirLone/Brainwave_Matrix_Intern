@@ -5,6 +5,8 @@
 [![PyQt5](https://img.shields.io/badge/Framework-PyQt5-green.svg)](https://pypi.org/project/PyQt5/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code Style: PEP8](https://img.shields.io/badge/code%20style-PEP8-blue)](https://www.python.org/dev/peps/pep-0008/)
+[![Build](https://github.com/MuzakirLone/password-strength-checker/actions/workflows/python-app.yml/badge.svg)](https://github.com/MuzakirLone/password-strength-checker/actions)
+
 
 
 A modern GUI-based Password Strength Checker built using **Python** and **PyQt5**, designed to provide real-time password evaluation with entropy calculation, strength labeling, and improvement suggestions. This tool also includes dark/light theme toggling and clipboard copy functionality.
