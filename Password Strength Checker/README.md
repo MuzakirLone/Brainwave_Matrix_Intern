@@ -24,7 +24,12 @@ A modern GUI-based Password Strength Checker built using **Python** and **PyQt5*
 
 ## 🖥️ GUI Preview
 
-> _Add screenshots or screen recordings here showing the UI in action (optional)._
+![Screenshot 2025-05-19 185543](https://github.com/user-attachments/assets/1f0957fc-e973-4088-a7c0-be489cacb1c1)
+![Screenshot 2025-05-19 185550](https://github.com/user-attachments/assets/5f5903ec-2c7e-4330-9ae2-07b436535eec)
+![Screenshot 2025-05-19 185557](https://github.com/user-attachments/assets/9e989aea-735e-48f8-9fe5-714dd9b34ebc)
+![Screenshot 2025-05-19 185608](https://github.com/user-attachments/assets/e224f407-5eb7-4167-b558-e448ae620620)
+![Screenshot 2025-05-19 185625](https://github.com/user-attachments/assets/5489397f-9db2-417d-a9e4-51cdd8df8220)
+![Screenshot 2025-05-19 185638](https://github.com/user-attachments/assets/bfd4c7c9-1abb-4e8f-a7dc-15983d9d43ba)
 
 ## ⚙️ How It Works
 
