@@ -77,7 +77,7 @@ cd Brainwave_Matrix_Intern
 git sparse-checkout init
 git sparse-checkout set "Password Strength Checker"
 git checkout
-cd Password Strength Checker
+cd "Password Strength Checker"
 ```
 
 **Run the application:**
