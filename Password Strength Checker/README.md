@@ -82,7 +82,7 @@ cd "Password Strength Checker"
 
 **Run the application:**
 ```
-python main.py
+python password_strength_checker.py
 ```
 
 **🧩 File Structure**
